@@ -9,7 +9,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git 'https://gitlab.com/myteam/my-data-tool.git'
+        git 'git@github.com:leerizza/cicd-dev.git'
       }
     }
 
