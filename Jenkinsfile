@@ -1,9 +1,5 @@
 pipeline {
-  agent {
-    docker {
-      image 'python:3.10'
-    }
-  }
+  agent any
 
   environment {
     IMAGE_NAME = "cicd-dev"
@@ -17,24 +13,25 @@ pipeline {
       }
     }
 
-    stage('Test') {
+    stage('Install Dependencies') {
       steps {
         sh '''
-          python3 -m venv venv
-          . venv/bin/activate && \
-          pip install --upgrade pip && \
-          pip install pytest && \
-          pytest tests/
+          pip install --upgrade pip
+          pip install pytest dbt-core
         '''
+      }
+    }
+
+    stage('Test') {
+      steps {
+        sh 'pytest tests/'
       }
     }
 
     stage('DBT Build & Test') {
       steps {
         sh '''
-          . venv/bin/activate && \
-          pip install dbt-core && \
-          dbt run && \
+          dbt run
           dbt test
         '''
       }
