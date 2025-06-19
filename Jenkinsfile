@@ -4,6 +4,7 @@ pipeline {
   environment {
     IMAGE_NAME = "cicd-dev"
     REGISTRY = "registry.mycompany.com"
+    VENV_DIR = "venv"
   }
 
   stages {
@@ -13,9 +14,11 @@ pipeline {
       }
     }
 
-    stage('Install Dependencies') {
+    stage('Setup Python Env') {
       steps {
         sh '''
+          python3 -m venv $VENV_DIR
+          . $VENV_DIR/bin/activate
           pip install --upgrade pip
           pip install pytest dbt-core
         '''
@@ -24,13 +27,17 @@ pipeline {
 
     stage('Test') {
       steps {
-        sh 'pytest tests/'
+        sh '''
+          . $VENV_DIR/bin/activate
+          pytest tests/
+        '''
       }
     }
 
     stage('DBT Build & Test') {
       steps {
         sh '''
+          . $VENV_DIR/bin/activate
           dbt run
           dbt test
         '''
