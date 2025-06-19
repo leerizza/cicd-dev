@@ -21,9 +21,9 @@ pipeline {
       steps {
         sh '''
           python3 -m venv venv
-          . venv/bin/activate
-          pip install --upgrade pip
-          pip install pytest
+          . venv/bin/activate && \
+          pip install --upgrade pip && \
+          pip install pytest && \
           pytest tests/
         '''
       }
@@ -32,8 +32,9 @@ pipeline {
     stage('DBT Build & Test') {
       steps {
         sh '''
-          pip install dbt-core
-          dbt run
+          . venv/bin/activate && \
+          pip install dbt-core && \
+          dbt run && \
           dbt test
         '''
       }
@@ -48,8 +49,10 @@ pipeline {
     stage('Push to Registry') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'docker-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $REGISTRY'
-          sh 'docker push $REGISTRY/$IMAGE_NAME:$BUILD_NUMBER'
+          sh '''
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $REGISTRY
+            docker push $REGISTRY/$IMAGE_NAME:$BUILD_NUMBER
+          '''
         }
       }
     }
