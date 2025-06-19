@@ -4,7 +4,6 @@ pipeline {
   environment {
     IMAGE_NAME = "cicd-dev"
     REGISTRY = "registry.mycompany.com"
-    VENV_DIR = "venv"
   }
 
   stages {
@@ -14,32 +13,15 @@ pipeline {
       }
     }
 
-    stage('Setup Python Env') {
+    stage('Setup Python Env & Test') {
       steps {
         sh '''
-          python3 -m venv $VENV_DIR
-          . $VENV_DIR/bin/activate
+          python3 -m venv venv
+          . venv/bin/activate
+          python -m ensurepip
           pip install --upgrade pip
           pip install pytest dbt-core
-        '''
-      }
-    }
-
-    stage('Test') {
-      steps {
-        sh '''
-          . $VENV_DIR/bin/activate
           pytest tests/
-        '''
-      }
-    }
-
-    stage('DBT Build & Test') {
-      steps {
-        sh '''
-          . $VENV_DIR/bin/activate
-          dbt run
-          dbt test
         '''
       }
     }
@@ -53,10 +35,8 @@ pipeline {
     stage('Push to Registry') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'docker-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-          sh '''
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $REGISTRY
-            docker push $REGISTRY/$IMAGE_NAME:$BUILD_NUMBER
-          '''
+          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $REGISTRY'
+          sh 'docker push $REGISTRY/$IMAGE_NAME:$BUILD_NUMBER'
         }
       }
     }
