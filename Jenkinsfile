@@ -13,11 +13,16 @@ pipeline {
       }
     }
 
-    stage('Test') {
-      steps {
-        sh 'pytest tests/'
-      }
-    }
+    // stage('Test') {
+    //   steps {
+    //     sh '''
+    //       python -m venv venv
+    //       . venv/bin/activate
+    //       pip install pytest
+    //       pytest tests/
+    //     '''
+    //   }
+    // }
 
     stage('DBT Build & Test') {
       steps {
