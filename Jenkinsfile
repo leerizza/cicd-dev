@@ -17,18 +17,12 @@ pipeline {
       }
     }
 
-  stage('Install Python') {
-    steps {
-        sh '''
-          apt-get update
-          apt-get install -y python3 python3-venv python3-pip
-        '''
-      }
-    }
-
     stage('Test') {
       steps {
         sh '''
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
           pip install pytest
           pytest tests/
         '''
